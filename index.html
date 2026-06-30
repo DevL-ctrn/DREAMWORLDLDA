@@ -69,11 +69,18 @@
         @media (max-width:992px) { .destacados-grid { grid-template-columns:repeat(2,1fr); } }
         @media (max-width:500px) { .destacados-grid { grid-template-columns:1fr; } }
 
-        /* ----- NOVIDADES ----- */
+        /* ----- NOVIDADES (CORREÇÃO: imagem inteira) ----- */
         .novidades-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:2rem; margin:2rem 0 3rem; }
         .novidade-card { background:var(--branco); border-radius:20px; overflow:hidden; border:1px solid #e8e8e8; transition:0.3s; box-shadow:0 4px 12px rgba(0,0,0,0.02); display:flex; flex-direction:column; }
         .novidade-card:hover { transform:translateY(-8px); box-shadow:0 28px 44px -16px rgba(0,0,0,0.12); border-color:var(--dourado); }
-        .novidade-card img { width:100%; aspect-ratio:16/10; object-fit:cover; }
+        .novidade-card img {
+            width: 100%;
+            height: auto;                 /* Altura automática para não cortar */
+            aspect-ratio: 16/10;          /* Mantém a proporção desejada */
+            object-fit: contain;          /* Mostra a imagem inteira sem cortes */
+            background: #f5f5f5;          /* Fundo caso a imagem não preencha */
+            display: block;
+        }
         .novidade-card .novidade-info { padding:1.2rem 1.4rem 1.6rem; flex:1; display:flex; flex-direction:column; }
         .novidade-card .novidade-info .tag { display:inline-block; background:var(--dourado); color:var(--preto); font-size:0.6rem; font-weight:800; padding:0.2rem 1rem; border-radius:40px; text-transform:uppercase; letter-spacing:0.5px; align-self:flex-start; margin-bottom:0.5rem; }
         .novidade-card .novidade-info h3 { font-size:1.2rem; font-weight:800; color:var(--preto); margin-bottom:0.3rem; }
@@ -130,8 +137,7 @@
         .form-btn { grid-column:1/-1; text-align:center; margin-top:0.5rem; }
         .form-btn .btn-primary { background:var(--dourado); color:var(--preto); padding:0.9rem 3rem; font-size:1.1rem; }
         .form-btn .btn-primary:hover { background:var(--branco); color:var(--preto); }
-        /* Campo "Outro" oculto por padrão */
-        .outro-destino-group { display:n; } /* será controlado via JS */
+        .outro-destino-group { display:none; }
         .outro-destino-group.visible { display:flex; }
         @media (max-width:700px) { .form-section { padding:2rem 1.2rem; border-radius:28px; } .form-section h2 { font-size:1.8rem; } .form-grid { grid-template-columns:1fr; gap:1.2rem; } .form-group.full { grid-column:1; } .form-btn { grid-column:1; } .form-btn .btn-primary { padding:0.8rem 2rem; font-size:1rem; width:100%; justify-content:center; } .form-group input, .form-group select, .form-group textarea { font-size:0.9rem; padding:0.7rem 1rem; } }
 
@@ -281,18 +287,18 @@
         
         <div class="novidades-grid">
             <div class="novidade-card">
-                <img src="umrah.jpg" alt="Promoção" />
+                <!-- IMAGEM CORRIGIDA: use object-fit:contain e height:auto para exibir inteira -->
+                <img src="https://images.unsplash.com/photo-1584556812952-9051a2b2dfa5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Promoção Umrah" />
                 <div class="novidade-info">
-                    <span class="tag">Pacote promocional </span>
+                    <span class="tag">Pacote promocional</span>
                     <h3>Viaje para Umrah</h3>
-                    <p>Viaje connosco para Umrah 2026 com pacote pensado para proporcionar conforto, traquilidade e uma jornada espiritual inesquecível.</p>
+                    <p>Viaje connosco para Umrah 2026 com pacote pensado para proporcionar conforto, tranquilidade e uma jornada espiritual inesquecível.</p>
                     <button class="btn-novidade" onclick="window.open('https://wa.me/258847200294','_blank')">Saiba mais <i class="fas fa-arrow-right"></i></button>
                 </div>
             </div>
-      
+        </div>
     </div>
 
-        
     <!-- ===== COMPANHIAS E DESTINOS ===== -->
     <div class="container" id="destinos">
         <div class="section-head">
@@ -337,7 +343,6 @@
                         <option value="outro">Outro</option>
                     </select>
                 </div>
-                <!-- Campo "Outro" – aparece apenas quando "Outro" é selecionado -->
                 <div class="form-group outro-destino-group" id="outroDestinoGroup">
                     <label for="outro-destino">Especifique o destino</label>
                     <input type="text" id="outro-destino" placeholder="Digite o nome do destino" />
@@ -655,7 +660,7 @@
         }
 
         // =============================================
-        // MODAL (mostra "10:00 - 12:00" por baixo da seta)
+        // MODAL
         // =============================================
         const modalOverlay = document.getElementById('modalOverlay');
         const modalContent = document.getElementById('modalContent');
@@ -664,7 +669,6 @@
         function openModal(dest) {
             const flight = dest.flight;
             let routeHTML = '';
-            // Para cada aeroporto, mostrar código e cidade
             flight.route.forEach((stop, index) => {
                 routeHTML += `
                         <div class="route-stop">
@@ -673,20 +677,14 @@
                             <div class="city">${stop.city}</div>
                         </div>
                     `;
-                // Se não for o último, adiciona o bloco com seta, intervalo e duração
                 if (index < flight.route.length - 1) {
-                    // Usamos os dados do stop atual (partida e chegada)
                     const dep = stop.departure && stop.departure !== '-' ? stop.departure : '';
                     const arr = stop.arrival && stop.arrival !== '-' ? stop.arrival : '';
                     const dur = stop.duration && stop.duration !== '-' ? stop.duration : '';
                     let timeDetail = '';
-                    if (dep && arr) {
-                        timeDetail = `${dep} - ${arr}`;  // Formato "10:00 - 12:00"
-                    } else if (dep) {
-                        timeDetail = dep;
-                    } else if (arr) {
-                        timeDetail = arr;
-                    }
+                    if (dep && arr) timeDetail = `${dep} - ${arr}`;
+                    else if (dep) timeDetail = dep;
+                    else if (arr) timeDetail = arr;
                     routeHTML += `
                         <div class="leg-details">
                             <div class="arrow"><i class="fas fa-arrow-right"></i></div>
@@ -779,18 +777,17 @@
             } else {
                 outroGroup.classList.remove('visible');
                 outroInput.removeAttribute('required');
-                outroInput.value = ''; // limpa o campo
+                outroInput.value = '';
             }
         });
 
         // =============================================
-        // ENVIO DO FORMULÁRIO (com validação extra)
+        // ENVIO DO FORMULÁRIO
         // =============================================
         const form = document.getElementById('formOrcamento');
         const toast = document.getElementById('toast');
         form.addEventListener('submit', function(e) {
             e.preventDefault();
-            // Se "Outro" estiver selecionado e o campo estiver vazio, avisamos
             if (destinoSelect.value === 'outro' && outroInput.value.trim() === '') {
                 alert('Por favor, especifique o destino pretendido.');
                 outroInput.focus();
@@ -801,7 +798,6 @@
                 toast.classList.remove('show');
             }, 4000);
             form.reset();
-            // Oculta o campo "Outro" novamente
             outroGroup.classList.remove('visible');
             outroInput.removeAttribute('required');
         });
@@ -809,7 +805,6 @@
             toast.classList.remove('show');
         });
 
-        // Scroll suave
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function(e) {
                 const href = this.getAttribute('href');
